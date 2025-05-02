@@ -1,0 +1,244 @@
+<!DOCTYPE html>
+<html lang="ro">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Știai că? - Votează!</title>
+  <style>
+    body {
+      background: linear-gradient(135deg, #74ebd5 0%, #ACB6E5 100%);
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+      margin: 0;
+      padding: 20px;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      min-height: 100vh;
+    }
+
+    h1 {
+      color: white;
+      text-shadow: 2px 2px 5px rgba(0,0,0,0.3);
+      margin-bottom: 30px;
+    }
+
+    .card {
+      background: white;
+      border-radius: 20px;
+      padding: 30px 20px;
+      max-width: 500px;
+      width: 90%;
+      box-shadow: 0 8px 16px rgba(0,0,0,0.2);
+      text-align: center;
+      animation: fadeIn 1s;
+    }
+
+    @keyframes fadeIn {
+      from {opacity: 0;}
+      to {opacity: 1;}
+    }
+
+    #questionText {
+      font-size: 24px;
+      margin-bottom: 30px;
+    }
+
+    .buttons {
+      display: flex;
+      justify-content: center;
+      gap: 20px;
+    }
+
+    button {
+      padding: 15px 25px;
+      font-size: 18px;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    .yes {
+      background-color: #4CAF50;
+      color: white;
+    }
+
+    .yes:hover {
+      background-color: #45a049;
+    }
+
+    .no {
+      background-color: #f44336;
+      color: white;
+    }
+
+    .no:hover {
+      background-color: #da190b;
+    }
+
+    .results {
+      margin-top: 25px;
+      display: none;
+    }
+
+    .progress-bar {
+      height: 20px;
+      background: #ddd;
+      border-radius: 10px;
+      overflow: hidden;
+      margin-top: 10px;
+      width: 100%;
+      display: flex;
+    }
+
+    .progress-yes {
+      background-color: #4CAF50;
+      height: 100%;
+      width: 0%;
+      transition: width 0.5s;
+    }
+
+    .progress-no {
+      background-color: #f44336;
+      height: 100%;
+      width: 0%;
+      transition: width 0.5s;
+    }
+
+    #nextBtn {
+      margin-top: 20px;
+      padding: 10px 20px;
+      font-size: 18px;
+      background-color: #008CBA;
+      color: white;
+      border: none;
+      border-radius: 10px;
+      cursor: pointer;
+      transition: 0.3s;
+    }
+
+    #nextBtn:hover {
+      background-color: #007bb5;
+    }
+  </style>
+</head>
+
+<body>
+
+<h1>Știai că?</h1>
+
+<div id="questionContainer" class="card">
+  <div id="questionText">Încărcare întrebare...</div>
+  
+  <div class="buttons">
+    <button class="yes" onclick="vote('yes')">DA</button>
+    <button class="no" onclick="vote('no')">NU</button>
+  </div>
+
+  <div class="results" id="resultsContainer">
+    <p><strong>Rezultate:</strong></p>
+    <div class="progress-bar">
+      <div class="progress-yes" id="progressYes"></div>
+      <div class="progress-no" id="progressNo"></div>
+    </div>
+    <p id="percentText"></p>
+    <button id="nextBtn" onclick="nextQuestion()">Următoarea întrebare</button>
+  </div>
+</div>
+
+<script>
+const questions = [
+  "Știai că inima unei balene albastre este cât o mașină mică?",
+  "Știai că oamenii și bananele împart 60% din ADN?",
+  "Știai că Australia are mai multe oi decât oameni?",
+  "Știai că Tokyo este cel mai populat oraș din lume?",
+  "Știai că Munții Alpi continuă să crească anual?",
+  "Știai că limba girafei poate ajunge la 45 de cm?",
+  "Știai că Brazilia are cea mai mare biodiversitate de păsări?",
+  "Știai că Sahara a fost cândva un teren verde?",
+  "Știai că o pisică a fost primar în Alaska?",
+  "Știai că un fulger e mai fierbinte decât suprafața Soarelui?",
+  "Știai că delfinii își dau nume între ei?",
+  "Știai că India este cea mai mare democrație din lume?",
+  "Știai că lacul Baikal conține 20% din apa dulce a lumii?",
+  "Știai că pepenele verde este o legumă?",
+  "Știai că Tesla Model S poate merge peste 500km cu o încărcare?",
+  "Știai că Antarctica este de fapt un deșert?",
+  "Știai că alfabetul coreean este unul dintre cele mai logice?",
+  "Știai că păianjenii călătoresc în aer cu fire de mătase?",
+  "Știai că Usain Bolt a alergat cu 44.72 km/h?",
+  "Știai că Olanda are mai multe biciclete decât oameni?",
+  "Știai că băutura Coca-Cola era inițial verde?",
+  "Știai că Audi, BMW și Mercedes-Benz sunt rivali germani?",
+  "Știai că Flamingo este roz din cauza dietei?",
+  "Știai că există un oraș Roma în fiecare stat din SUA?",
+  "Știai că Girafele dorm doar câteva minute pe zi?",
+  "Știai că urșii polari sunt nativi doar în Arctica?",
+  "Știai că marele zid chinezesc are peste 21.000 km?",
+  "Știai că hipopotamii produc o cremă solară naturală?",
+  "Știai că Formula 1 poate accelera 0-100 km/h în 2 secunde?",
+  "Știai că un crocodil poate trăi peste 100 de ani?",
+  "Știai că India are 22 de limbi oficiale?",
+  "Știai că există peste 400 de specii de rechini?",
+  "Știai că melcii pot dormi până la 3 ani?",
+  "Știai că Istanbul se află pe 2 continente?",
+  "Știai că albina bate din aripi de 200 ori pe secundă?",
+  "Știai că peste 95% din ocean rămâne neexplorat?",
+  "Știai că Venus se rotește invers față de alte planete?",
+  "Știai că lacrosse este sportul național al Canadei?",
+  "Știai că Italia are cele mai multe situri UNESCO?",
+  "Știai că Antarctica conține 70% din apa dulce a planetei?",
+  "Știai că Zanzibar este un arhipelag în largul Tanzaniei?",
+  "Știai că limba leului poate curăța pielea de carne?",
+  "Știai că urșii panda mănâncă până la 12 ore pe zi?",
+  "Știai că cele mai multe tornade au loc în SUA?",
+  "Știai că Marea Moartă este atât de sărată încât nu poți înota normal?",
+  "Știai că Google a fost inițial numit Backrub?",
+  "Știai că Munții Himalaya se ridică anual cu 1 cm?",
+  "Știai că Dalai Lama a fost găsit la vârsta de 2 ani?",
+  "Știai că Titanic a fost cea mai mare navă a timpului său?"
+];
+
+let currentIndex = 0;
+let votes = Array(questions.length).fill().map(() => ({ yes: 0, no: 0 }));
+
+function loadQuestion() {
+  document.getElementById("questionText").textContent = questions[currentIndex];
+  document.getElementById("resultsContainer").style.display = "none";
+}
+
+function vote(type) {
+  if (type === 'yes') {
+    votes[currentIndex].yes++;
+  } else {
+    votes[currentIndex].no++;
+  }
+  showResults();
+}
+
+function showResults() {
+  const total = votes[currentIndex].yes + votes[currentIndex].no;
+  const yesPercent = total ? Math.round((votes[currentIndex].yes / total) * 100) : 0;
+  const noPercent = total ? Math.round((votes[currentIndex].no / total) * 100) : 0;
+
+  document.getElementById("progressYes").style.width = yesPercent + "%";
+  document.getElementById("progressNo").style.width = noPercent + "%";
+  document.getElementById("percentText").textContent = `DA: ${yesPercent}% | NU: ${noPercent}%`;
+  document.getElementById("resultsContainer").style.display = "block";
+}
+
+function nextQuestion() {
+  currentIndex++;
+  if (currentIndex >= questions.length) {
+    alert("Ai terminat toate întrebările! Mulțumim!");
+    currentIndex = 0;
+  }
+  document.getElementById("questionContainer").style.animation = "fadeIn 1s";
+  loadQuestion();
+}
+
+window.onload = loadQuestion;
+</script>
+
+</body>
+</html>
